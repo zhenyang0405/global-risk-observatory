@@ -1,0 +1,122 @@
+[
+  {
+    "url": "fixture://antakya-quake",
+    "title": "Magnitude 6.2 earthquake strikes near Antakya, Turkey; AFAD reports building collapses",
+    "body": "A magnitude 6.2 earthquake struck near Antakya, Hatay province, on Tuesday morning, collapsing several older buildings and killing at least 12 people. AFAD reported strong aftershocks throughout the night and dispatched additional search-and-rescue teams from Ankara and Adana. Power was lost across multiple districts and the airport briefly suspended operations.",
+    "source": "gdelt",
+    "country": "TR",
+    "lat": 36.20,
+    "lng": 36.16,
+    "published_at": "2026-05-14T05:30:00+00:00"
+  },
+  {
+    "url": "fixture://khartoum-rsf",
+    "title": "Heavy fighting erupts in Khartoum's Bahri district between SAF and RSF",
+    "body": "Sustained artillery exchanges between the Sudanese Armed Forces and the Rapid Support Forces resumed in Bahri, Khartoum's northern district, displacing residents toward Omdurman. UNHCR estimates at least 4,000 people fled overnight. Hospitals report dwindling oxygen supplies.",
+    "source": "gdelt",
+    "country": "SD",
+    "lat": 15.65,
+    "lng": 32.55,
+    "published_at": "2026-05-14T03:10:00+00:00"
+  },
+  {
+    "url": "fixture://paris-protest",
+    "title": "Pension protest draws 80,000 in central Paris; clashes near Place de la Republique",
+    "body": "Around 80,000 demonstrators gathered in central Paris on Sunday in the latest in a series of protests over pension reform. CGT organizers and police confirmed isolated clashes near Place de la Republique; 14 arrests reported.",
+    "source": "reuters",
+    "country": "FR",
+    "lat": 48.867,
+    "lng": 2.363,
+    "published_at": "2026-05-13T18:00:00+00:00"
+  },
+  {
+    "url": "fixture://manila-typhoon",
+    "title": "Typhoon Aghon makes landfall in Luzon; mass evacuations underway",
+    "body": "Typhoon Aghon (international name: Ewiniar) made landfall over northern Luzon overnight with sustained winds of 165 km/h. PAGASA issued signal 4 across three provinces. The DSWD has evacuated more than 23,000 residents to higher ground.",
+    "source": "ap",
+    "country": "PH",
+    "lat": 17.61,
+    "lng": 121.72,
+    "published_at": "2026-05-13T22:45:00+00:00"
+  },
+  {
+    "url": "fixture://drc-ebola",
+    "title": "WHO confirms two new Ebola cases in Equateur, DRC; vaccination ring expanded",
+    "body": "The World Health Organization confirmed two additional Ebola Zaire cases in Equateur Province, bringing the cumulative count for this outbreak to 19. Vaccination rings have been expanded to neighbouring health zones; cross-border surveillance with the Republic of Congo is intensifying.",
+    "source": "bbc",
+    "country": "CD",
+    "lat": -0.05,
+    "lng": 18.27,
+    "published_at": "2026-05-13T14:20:00+00:00"
+  },
+  {
+    "url": "fixture://argentina-default",
+    "title": "Argentine peso slides 9% as government delays IMF review",
+    "body": "The Argentine peso fell 9% against the dollar on Monday after the government postponed its scheduled IMF review. Central bank intervention slowed but did not halt the slide. Inflation expectations spiked above 180% for the coming quarter.",
+    "source": "reuters",
+    "country": "AR",
+    "lat": -34.61,
+    "lng": -58.38,
+    "published_at": "2026-05-13T13:00:00+00:00"
+  },
+  {
+    "url": "fixture://gaza-displacement",
+    "title": "Tens of thousands flee Rafah as ground operations expand",
+    "body": "OCHA reports that approximately 90,000 people have fled Rafah's eastern neighbourhoods over the past 48 hours as ground operations expand. Aid convoys are stalled at the Kerem Shalom crossing; UNICEF warns of acute shortages of clean water.",
+    "source": "aljazeera",
+    "country": "PS",
+    "lat": 31.29,
+    "lng": 34.24,
+    "published_at": "2026-05-14T01:15:00+00:00"
+  },
+  {
+    "url": "fixture://california-wildfire",
+    "title": "Fast-moving wildfire near Big Sur prompts mandatory evacuations along Highway 1",
+    "body": "A fast-moving wildfire just north of Big Sur grew to 4,200 acres overnight, driven by 30 mph onshore winds. Cal Fire issued mandatory evacuation orders for several coastal communities along Highway 1; Highway 1 closed between Carmel and Lucia.",
+    "source": "ap",
+    "country": "US",
+    "lat": 36.27,
+    "lng": -121.81,
+    "published_at": "2026-05-14T06:00:00+00:00"
+  },
+  {
+    "url": "fixture://taiwan-strait-incident",
+    "title": "Two ROC F-16s intercept PLA aircraft in Taiwan Strait median line crossing",
+    "body": "Taiwan's Ministry of National Defense reported that two Republic of China F-16s intercepted PLA aircraft that briefly crossed the Taiwan Strait median line on Tuesday. No engagement; ROCAF issued standard diplomatic protests.",
+    "source": "reuters",
+    "country": "TW",
+    "lat": 24.00,
+    "lng": 120.50,
+    "published_at": "2026-05-14T02:30:00+00:00"
+  },
+  {
+    "url": "fixture://greece-floods",
+    "title": "Flash floods sweep through Thessaly; one dead, dozens stranded",
+    "body": "Flash floods triggered by sustained heavy rainfall swept through villages in the Thessaly plain. One person was confirmed dead and dozens of farmers were stranded as rivers overflowed; the Greek Fire Service has mobilised swift-water rescue teams.",
+    "source": "gdelt",
+    "country": "GR",
+    "lat": 39.36,
+    "lng": 22.94,
+    "published_at": "2026-05-14T07:00:00+00:00"
+  },
+  {
+    "url": "fixture://nigeria-banditry",
+    "title": "Bandits attack convoy in Zamfara state; at least 11 killed",
+    "body": "Armed bandits ambushed a vehicle convoy along the Gusau-Sokoto road in Zamfara state on Monday evening, killing at least 11 people, according to local authorities. Security forces deployed reinforcements to the area.",
+    "source": "bbc",
+    "country": "NG",
+    "lat": 12.17,
+    "lng": 6.66,
+    "published_at": "2026-05-13T17:00:00+00:00"
+  },
+  {
+    "url": "fixture://japan-quake-aftershock",
+    "title": "Magnitude 5.3 aftershock recorded off Noto Peninsula",
+    "body": "A magnitude 5.3 aftershock was recorded off the Noto Peninsula late Monday. No tsunami warning was issued. JMA reports the aftershock sequence continues from the January Noto earthquake.",
+    "source": "gdelt",
+    "country": "JP",
+    "lat": 37.50,
+    "lng": 137.30,
+    "published_at": "2026-05-13T23:55:00+00:00"
+  }
+]

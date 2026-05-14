@@ -1,0 +1,35 @@
+.DS_Store
+.env
+.env.local
+
+# python
+__pycache__/
+*.py[cod]
+.venv/
+.uv-cache/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# node
+node_modules/
+.next/
+out/
+.turbo/
+
+# runtime data
+data/observatory.db
+data/observatory.db-journal
+data/observatory.db-wal
+data/observatory.db-shm
+data/cities15000.txt
+data/cities15000.zip
+data/textures/*.jpg
+data/textures/*.png
+frontend/public/textures/*.jpg
+frontend/public/textures/*.png
+
+# editor
+.idea/
+.vscode/
+*.swp
