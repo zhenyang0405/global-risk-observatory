@@ -16,10 +16,11 @@ from ..api import events as sse
 from ..config import SETTINGS
 from ..geocoding.gazetteer import get_gazetteer
 from ..models import model_for
-from ..ollama_client import OPTIONS_INGEST, chat_structured
+from ..ollama_client import OPTIONS_INGEST, chat_structured, chat_tools
 from ..schemas import EventEnvelope, IngestedEvent, RawArticle
 from ..store import repository as repo
 from ..store.connection import connect
+from .tools import DISPATCH, TOOL_DEFS
 
 log = logging.getLogger(__name__)
 
@@ -62,21 +63,45 @@ def _fill_geocoding(ingested: IngestedEvent, article: RawArticle) -> IngestedEve
 
 
 async def classify_one(article: RawArticle) -> IngestedEvent | None:
-    """Call E4B in a worker thread. Return None on failure."""
+    """Call E4B in a worker thread. Return None on failure.
+
+    If SETTINGS.use_tool_calling is true, the model gets the tool-calling
+    layer (lookup_location, classify_severity_by_metric, find_similar_recent_events).
+    Otherwise we fall back to single-turn schema-locked extraction, which is
+    also the demo-safe path if Gemma 4 tool dialect regresses.
+    """
     model = model_for("ingest")
     try:
-        ingested, latency_ms = await asyncio.to_thread(
-            chat_structured,
-            model=model,
-            system=_system_prompt(),
-            user=_user_prompt(article),
-            schema=IngestedEvent,
-            options=OPTIONS_INGEST,
-        )
+        if SETTINGS.use_tool_calling:
+            ingested, latency_ms, trace = await asyncio.to_thread(
+                chat_tools,
+                model=model,
+                system=_system_prompt(),
+                user=_user_prompt(article),
+                tools=TOOL_DEFS,
+                dispatch=DISPATCH,
+                schema=IngestedEvent,
+                options=OPTIONS_INGEST,
+                max_tool_rounds=3,
+            )
+            if trace:
+                names = ",".join(t["name"] for t in trace)
+                log.info("tool_trace[%s] %d call(s): %s", article.url[:60], len(trace), names)
+        else:
+            ingested, latency_ms = await asyncio.to_thread(
+                chat_structured,
+                model=model,
+                system=_system_prompt(),
+                user=_user_prompt(article),
+                schema=IngestedEvent,
+                options=OPTIONS_INGEST,
+            )
     except Exception as e:  # noqa: BLE001
         log.warning("classify failed for %s: %s", article.url, e)
         return None
 
+    # Safety net: if the model never called lookup_location, run the legacy
+    # geocoding cascade.
     ingested = _fill_geocoding(ingested, article)
     return ingested, latency_ms, model  # type: ignore[return-value]
 

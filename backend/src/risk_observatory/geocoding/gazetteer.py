@@ -100,6 +100,17 @@ class Gazetteer:
         country_iso: Optional[str] = None,
     ) -> Optional[tuple[float, float]]:
         """Return (lat, lng) for a city name; None if no confident match."""
+        hit = self.resolve_full(name, country_iso)
+        return (hit.lat, hit.lng) if hit is not None else None
+
+    def resolve_full(
+        self,
+        name: str,
+        country_iso: Optional[str] = None,
+    ) -> Optional[City]:
+        """Same lookup as resolve() but returns the full City (including the
+        ISO-3166 alpha-2 country code). Used by the tool-calling layer so the
+        LLM can fill country_iso on the way back."""
         self._load()
         if not self._loaded or not name:
             return None
@@ -111,12 +122,11 @@ class Gazetteer:
         if cc:
             hit = self._exact.get((n, cc))
             if hit is not None:
-                return (hit.lat, hit.lng)
+                return hit
         # No country filter: take the most populous match for this exact name.
         candidates = self._by_name.get(n)
         if candidates:
-            best = max(candidates, key=lambda c: c.population)
-            return (best.lat, best.lng)
+            return max(candidates, key=lambda c: c.population)
 
         # Fuzzy fallback.
         match = process.extractOne(
@@ -132,8 +142,7 @@ class Gazetteer:
                 candidates = scoped
         if not candidates:
             return None
-        best = max(candidates, key=lambda c: c.population)
-        return (best.lat, best.lng)
+        return max(candidates, key=lambda c: c.population)
 
 
 _GAZETTEER: Optional[Gazetteer] = None

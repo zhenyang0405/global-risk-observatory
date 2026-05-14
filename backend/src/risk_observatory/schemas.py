@@ -23,7 +23,16 @@ Severity = Literal["low", "medium", "high", "critical"]
 
 Escalation = Literal["cooling", "steady", "escalating"]
 
-SourceKind = Literal["gdelt", "reuters", "ap", "bbc", "aljazeera", "manual"]
+SourceKind = Literal[
+    "gdelt",
+    "reuters",
+    "ap",
+    "bbc",
+    "aljazeera",
+    "manual",
+    "usgs",
+    "eonet",
+]
 
 
 # ---- raw input ----
@@ -40,6 +49,33 @@ class RawArticle(BaseModel):
     gdelt_country: Optional[str] = None
     gdelt_lat: Optional[float] = None
     gdelt_lng: Optional[float] = None
+
+
+# ---- structured (pre-classified, pre-geocoded) input ----
+
+
+class StructuredEvent(BaseModel):
+    """A pre-classified, pre-geocoded risk event.
+
+    Used by sources that ship lat/lng + category in the payload (USGS,
+    NASA EONET). Bypasses the E4B extractor and is inserted directly into the
+    DB via repository.insert_structured_event(). The shape mirrors the fields
+    of IngestedEvent so the downstream PersistedEvent contract stays uniform.
+    """
+
+    url: str
+    source: SourceKind
+    title: str = Field(max_length=120)
+    summary: str = Field(max_length=240)
+    primary_location: str
+    country_iso: Optional[str] = Field(default=None, max_length=3)
+    lat: float = Field(ge=-90.0, le=90.0)
+    lng: float = Field(ge=-180.0, le=180.0)
+    category: RiskCategory
+    severity: Severity
+    key_entities: list[str] = Field(default_factory=list, max_length=8)
+    sentiment: float = Field(default=0.0, ge=-1.0, le=1.0)
+    published_at: datetime
 
 
 # ---- E4B output ----
