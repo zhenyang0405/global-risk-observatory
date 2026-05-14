@@ -20,7 +20,9 @@ export type SourceKind =
   | "ap"
   | "bbc"
   | "aljazeera"
-  | "manual";
+  | "manual"
+  | "usgs"
+  | "eonet";
 
 export interface PersistedEvent {
   id: string;

@@ -13,6 +13,7 @@ from ..schemas import (
     PersistedBrief,
     PersistedEvent,
     RawArticle,
+    StructuredEvent,
     WorldBrief,
 )
 
@@ -134,6 +135,107 @@ def insert_event(
     )
 
 
+def insert_structured_event(
+    conn: sqlite3.Connection,
+    *,
+    ev: StructuredEvent,
+) -> PersistedEvent:
+    """Insert a pre-classified, pre-geocoded event from a structured feed.
+
+    Synthesises a parent articles row (body=None) to satisfy the events.url ->
+    articles.url FK, then inserts the event with model="structured" and
+    latency_ms=0. Mirrors insert_event's shape so the SSE/repo contract is
+    uniform across LLM and structured paths.
+    """
+    # Synthetic parent article. insert_article returns False if it already exists
+    # (URL is the PK); we treat that as benign because the caller already
+    # checked article_exists() and is racing with another worker.
+    try:
+        conn.execute(
+            """
+            INSERT INTO articles
+              (url, source, title, body, published_at, gdelt_country, gdelt_lat, gdelt_lng)
+            VALUES (?, ?, ?, NULL, ?, NULL, ?, ?)
+            """,
+            (
+                ev.url,
+                ev.source,
+                ev.title,
+                ev.published_at.isoformat(),
+                ev.lat,
+                ev.lng,
+            ),
+        )
+    except sqlite3.IntegrityError:
+        # Parent already exists; fine.
+        pass
+
+    event_id = uuid.uuid4().hex
+    classified_at = datetime.now(timezone.utc)
+    model = "structured"
+    latency_ms = 0
+
+    conn.execute(
+        """
+        INSERT INTO events
+          (id, url, title, summary, primary_location, country_iso, lat, lng,
+           category, severity, key_entities, sentiment, source, published_at,
+           classified_at, model, latency_ms)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            event_id,
+            ev.url,
+            ev.title,
+            ev.summary,
+            ev.primary_location,
+            ev.country_iso,
+            ev.lat,
+            ev.lng,
+            ev.category,
+            ev.severity,
+            json.dumps(ev.key_entities),
+            ev.sentiment,
+            ev.source,
+            ev.published_at.isoformat(),
+            classified_at.isoformat(),
+            model,
+            latency_ms,
+        ),
+    )
+
+    rowid = conn.execute(
+        "SELECT rowid FROM events WHERE id = ?", (event_id,)
+    ).fetchone()[0]
+    conn.execute(
+        """
+        INSERT INTO events_rtree (id_int, min_lat, max_lat, min_lng, max_lng)
+        VALUES (?, ?, ?, ?, ?)
+        """,
+        (rowid, ev.lat, ev.lat, ev.lng, ev.lng),
+    )
+
+    return PersistedEvent(
+        id=event_id,
+        url=ev.url,
+        title=ev.title,
+        summary=ev.summary,
+        primary_location=ev.primary_location,
+        country_iso=ev.country_iso,
+        lat=ev.lat,
+        lng=ev.lng,
+        category=ev.category,
+        severity=ev.severity,
+        key_entities=ev.key_entities,
+        sentiment=ev.sentiment,
+        source=ev.source,
+        published_at=ev.published_at,
+        classified_at=classified_at,
+        model=model,
+        latency_ms=latency_ms,
+    )
+
+
 def _row_to_event(row: sqlite3.Row) -> PersistedEvent:
     return PersistedEvent(
         id=row["id"],
@@ -171,6 +273,40 @@ def recent_events(
         sql += f" AND category IN ({placeholders})"
         params.extend(categories)
     sql += " ORDER BY classified_at DESC LIMIT ?"
+    params.append(limit)
+    rows = conn.execute(sql, params).fetchall()
+    return [_row_to_event(r) for r in rows]
+
+
+def search_recent(
+    conn: sqlite3.Connection,
+    *,
+    query: str,
+    hours: int = 12,
+    limit: int = 3,
+) -> list[PersistedEvent]:
+    """LIKE-search recent events for the find_similar_recent_events tool.
+
+    Matches each whitespace-separated token of `query` against the concatenation
+    of (title, primary_location, country_iso) case-insensitively. ANDs the
+    tokens so all must match; empty query returns nothing.
+    """
+    tokens = [t.strip() for t in query.lower().split() if t.strip()]
+    if not tokens:
+        return []
+    cutoff = (datetime.now(timezone.utc) - timedelta(hours=hours)).isoformat()
+    like_clauses = " AND ".join(
+        ["LOWER(title || ' ' || primary_location || ' ' || COALESCE(country_iso,'')) LIKE ?"]
+        * len(tokens)
+    )
+    sql = (
+        "SELECT * FROM events "
+        "WHERE classified_at >= ? "
+        f"AND ({like_clauses}) "
+        "ORDER BY classified_at DESC LIMIT ?"
+    )
+    params: list = [cutoff]
+    params.extend(f"%{t}%" for t in tokens)
     params.append(limit)
     rows = conn.execute(sql, params).fetchall()
     return [_row_to_event(r) for r in rows]
