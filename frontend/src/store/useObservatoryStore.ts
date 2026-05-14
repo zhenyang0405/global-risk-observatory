@@ -11,9 +11,7 @@ import { ALL_CATEGORIES } from "@/lib/types";
 interface ObservatoryState {
   events: Map<string, PersistedEvent>;
   latestBrief: PersistedBrief | null;
-  morphT: number;
-  targetMorph: number;
-  morphAnimating: boolean;
+  autoRotate: boolean;
   filters: Set<RiskCategory>;
   selectedEventId: string | null;
   modelInfo: ModelInfo | null;
@@ -21,9 +19,8 @@ interface ObservatoryState {
 
   applyEvent: (e: PersistedEvent) => void;
   applyBrief: (b: PersistedBrief) => void;
-  setMorphT: (t: number) => void;
-  startMorph: (target: 0 | 1) => void;
-  finishMorph: () => void;
+  toggleAutoRotate: () => void;
+  setAutoRotate: (v: boolean) => void;
   toggleFilter: (c: RiskCategory) => void;
   selectEvent: (id: string | null) => void;
   setModelInfo: (info: ModelInfo) => void;
@@ -33,9 +30,7 @@ interface ObservatoryState {
 export const useObservatoryStore = create<ObservatoryState>((set) => ({
   events: new Map(),
   latestBrief: null,
-  morphT: 0,
-  targetMorph: 0,
-  morphAnimating: false,
+  autoRotate: true,
   filters: new Set(ALL_CATEGORIES),
   selectedEventId: null,
   modelInfo: null,
@@ -45,7 +40,6 @@ export const useObservatoryStore = create<ObservatoryState>((set) => ({
     set((s) => {
       const next = new Map(s.events);
       next.set(e.id, e);
-      // Cap at 2000 most recent to keep memory bounded.
       if (next.size > 2000) {
         const oldest = next.keys().next().value;
         if (oldest !== undefined) next.delete(oldest);
@@ -55,15 +49,9 @@ export const useObservatoryStore = create<ObservatoryState>((set) => ({
 
   applyBrief: (b) => set({ latestBrief: b, briefRunning: false }),
 
-  setMorphT: (t) => set({ morphT: t }),
+  toggleAutoRotate: () => set((s) => ({ autoRotate: !s.autoRotate })),
 
-  startMorph: (target) =>
-    set((s) => {
-      if (s.morphAnimating) return s;
-      return { targetMorph: target, morphAnimating: true };
-    }),
-
-  finishMorph: () => set({ morphAnimating: false }),
+  setAutoRotate: (v) => set({ autoRotate: v }),
 
   toggleFilter: (c) =>
     set((s) => {

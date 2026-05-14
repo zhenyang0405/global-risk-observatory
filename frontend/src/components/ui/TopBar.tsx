@@ -7,25 +7,26 @@ import { ALL_CATEGORIES, CATEGORY_COLOR } from "@/lib/types";
 import { useObservatoryStore } from "@/store/useObservatoryStore";
 
 export function TopBar() {
-  const morphT = useObservatoryStore((s) => s.morphT);
-  const animating = useObservatoryStore((s) => s.morphAnimating);
-  const startMorph = useObservatoryStore((s) => s.startMorph);
+  const autoRotate = useObservatoryStore((s) => s.autoRotate);
+  const toggleAutoRotate = useObservatoryStore((s) => s.toggleAutoRotate);
   const filters = useObservatoryStore((s) => s.filters);
   const toggleFilter = useObservatoryStore((s) => s.toggleFilter);
   const briefRunning = useObservatoryStore((s) => s.briefRunning);
   const setBriefRunning = useObservatoryStore((s) => s.setBriefRunning);
 
-  const isFlat = morphT > 0.5;
-
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key.toLowerCase() === "f" && !e.metaKey && !e.ctrlKey) {
-        startMorph(isFlat ? 0 : 1);
+      if (e.code === "Space" && !e.metaKey && !e.ctrlKey) {
+        // Don't steal Space from form inputs.
+        const tag = (e.target as HTMLElement | null)?.tagName;
+        if (tag === "INPUT" || tag === "TEXTAREA") return;
+        e.preventDefault();
+        toggleAutoRotate();
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [isFlat, startMorph]);
+  }, [toggleAutoRotate]);
 
   const handleRun = async () => {
     if (briefRunning) return;
@@ -35,19 +36,17 @@ export function TopBar() {
     } catch {
       setBriefRunning(false);
     }
-    // useBriefStream will flip briefRunning back to false when the new brief arrives.
   };
 
   return (
     <header className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-start justify-between p-4">
       <div className="pointer-events-auto flex items-center gap-2">
         <button
-          onClick={() => startMorph(isFlat ? 0 : 1)}
-          disabled={animating}
-          className="rounded-md bg-panel px-3 py-1.5 text-xs font-medium ring-1 ring-line transition-all hover:ring-[#7c9cff]/60 disabled:opacity-50"
+          onClick={toggleAutoRotate}
+          className="rounded-md bg-panel px-3 py-1.5 text-xs font-medium ring-1 ring-line transition-all hover:ring-[#7c9cff]/60"
         >
-          {isFlat ? "🌐 Sphere" : "🗺 Flat"}
-          <span className="ml-2 font-mono text-[10px] text-muted">F</span>
+          {autoRotate ? "⏸ Pause" : "▶ Rotate"}
+          <span className="ml-2 font-mono text-[10px] text-muted">SPACE</span>
         </button>
         <div className="flex items-center gap-1 rounded-md bg-panel px-2 py-1 ring-1 ring-line">
           {ALL_CATEGORIES.map((c) => {

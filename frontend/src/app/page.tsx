@@ -8,8 +8,7 @@ import { TopBar } from "@/components/ui/TopBar";
 import { useBriefStream, useModelInfo } from "@/hooks/useBriefStream";
 import { useEventsStream } from "@/hooks/useEventsStream";
 
-// R3F v8 dies on SSR (it reads React internals at module-load time).
-// Dynamic import with ssr:false keeps it strictly client-only.
+// react-globe.gl touches `window` at module load, so it must be client-only.
 const GlobeCanvas = dynamic(
   () => import("@/components/globe/GlobeCanvas").then((m) => m.GlobeCanvas),
   { ssr: false, loading: () => <div className="h-full w-full bg-bg" /> }
