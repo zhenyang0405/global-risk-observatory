@@ -11,6 +11,11 @@ export function EventDetail() {
   );
   if (!event) return null;
   const color = CATEGORY_COLOR[event.category] ?? "#9ca3af";
+  // image_local_path is the sha256 stem (no extension); the FastAPI route
+  // exposes the cached jpg at /images/<hash>.jpg, proxied under /api/.
+  const cachedImage = event.image_local_path
+    ? `/api/images/${event.image_local_path}.jpg`
+    : null;
   return (
     <div className="pointer-events-auto absolute bottom-4 left-4 z-10 max-w-md rounded-lg border border-line bg-bg/95 px-4 py-3 backdrop-blur">
       <div className="mb-2 flex items-start justify-between gap-3">
@@ -42,6 +47,22 @@ export function EventDetail() {
           ✕
         </button>
       </div>
+      {cachedImage && (
+        <figure className="-mx-1 mb-2 overflow-hidden rounded-md ring-1 ring-line">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={cachedImage}
+            alt={event.image_caption ?? event.title}
+            className="block max-h-48 w-full object-cover"
+            loading="lazy"
+          />
+          {event.image_caption && (
+            <figcaption className="bg-[#0e131b] px-2 py-1 text-[10px] italic text-muted">
+              {event.image_caption}
+            </figcaption>
+          )}
+        </figure>
+      )}
       <p className="text-[12px] leading-relaxed text-fg/85">{event.summary}</p>
       {event.key_entities.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-1.5">

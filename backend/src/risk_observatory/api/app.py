@@ -25,6 +25,7 @@ from ..reasoning.loop import run_reasoning_loop
 from ..store.connection import connect
 from .routes_brief import router as brief_router
 from .routes_events import router as events_router
+from .routes_images import router as images_router
 from .routes_meta import router as meta_router
 
 logging.basicConfig(
@@ -81,3 +82,4 @@ app.add_middleware(
 app.include_router(meta_router)
 app.include_router(events_router)
 app.include_router(brief_router)
+app.include_router(images_router)
