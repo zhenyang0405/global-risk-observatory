@@ -52,10 +52,13 @@ Rules:
 
 - `primary_location` — the single most operationally important place name.
   Prefer city > region > country. Use the article's wording.
-- `country_iso` — ISO-3166-1 alpha-2 if unambiguous. Else null. If you called
-  `lookup_location`, copy its `country_iso` here.
-- `lat` / `lng` — copy from a `lookup_location` result whenever possible.
-  Only set both to null if the gazetteer also failed to resolve the place.
+- `country_iso` — ISO-3166-1 alpha-2. **If `lookup_location` returned a
+  `country_iso` you MUST copy that exact value here — never null it out.**
+  Only emit null if no tool gave you a country AND the article itself does
+  not name one unambiguously.
+- `lat` / `lng` — **If `lookup_location` returned `lat`/`lng` you MUST copy
+  both into the final JSON.** Only set both to null if the gazetteer also
+  failed to resolve the place.
 
 ## SUMMARY
 

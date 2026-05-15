@@ -47,19 +47,30 @@ def _user_prompt(article: RawArticle) -> str:
 
 
 def _fill_geocoding(ingested: IngestedEvent, article: RawArticle) -> IngestedEvent:
-    if ingested.lat is not None and ingested.lng is not None:
-        return ingested
-    # 1) Prefer GDELT's source lat/lng if present.
-    if article.gdelt_lat is not None and article.gdelt_lng is not None:
-        return ingested.model_copy(
-            update={"lat": article.gdelt_lat, "lng": article.gdelt_lng}
-        )
-    # 2) Local gazetteer fallback.
+    updates: dict = {}
     gaz = get_gazetteer()
-    hit = gaz.resolve(ingested.primary_location, ingested.country_iso)
-    if hit is not None:
-        return ingested.model_copy(update={"lat": hit[0], "lng": hit[1]})
-    return ingested
+
+    # Resolve the place once so we can pull both coords and country from it.
+    city = gaz.resolve_full(ingested.primary_location, ingested.country_iso)
+
+    if ingested.lat is None or ingested.lng is None:
+        if article.gdelt_lat is not None and article.gdelt_lng is not None:
+            updates["lat"] = article.gdelt_lat
+            updates["lng"] = article.gdelt_lng
+        elif city is not None:
+            updates["lat"] = city.lat
+            updates["lng"] = city.lng
+
+    # Safety net: model frequently drops country_iso on the final schema pass
+    # even when lookup_location returned one. Fill from the gazetteer or
+    # GDELT's reported country whenever it's missing.
+    if not ingested.country_iso:
+        if city is not None and city.country:
+            updates["country_iso"] = city.country
+        elif article.gdelt_country:
+            updates["country_iso"] = article.gdelt_country[:2].upper()
+
+    return ingested.model_copy(update=updates) if updates else ingested
 
 
 async def classify_one(article: RawArticle) -> IngestedEvent | None:

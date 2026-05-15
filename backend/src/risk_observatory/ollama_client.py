@@ -212,7 +212,10 @@ def chat_tools(
                 "role": "user",
                 "content": (
                     "Now emit the final JSON object matching the schema. "
-                    "Do not call more tools."
+                    "Do not call more tools. "
+                    "If any lookup_location call returned country_iso, lat, "
+                    "or lng, copy those exact values into the final JSON — "
+                    "do not leave them null when a tool already gave them to you."
                 ),
             }
         ],
