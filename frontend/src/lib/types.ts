@@ -42,6 +42,9 @@ export interface PersistedEvent {
   classified_at: string;
   model: string;
   latency_ms: number;
+  image_url?: string | null;
+  image_local_path?: string | null;
+  image_caption?: string | null;
 }
 
 export interface EventCluster {

@@ -202,7 +202,8 @@ export function GlobeCanvas() {
         pointLabel={(d) => {
           const p = d as PointDatum;
           const e = p.event;
-          return `<div style="font:12px -apple-system,system-ui,sans-serif;color:#d6dbe5;background:#0e131b;border:1px solid #1c2230;border-radius:6px;padding:6px 9px;max-width:240px"><b style="color:${p.color}">${e.category}</b> · ${e.severity}<br/>${e.title}</div>`;
+          const cam = e.image_url ? "📷 " : "";
+          return `<div style="font:12px -apple-system,system-ui,sans-serif;color:#d6dbe5;background:#0e131b;border:1px solid #1c2230;border-radius:6px;padding:6px 9px;max-width:240px">${cam}<b style="color:${p.color}">${e.category}</b> · ${e.severity}<br/>${e.title}</div>`;
         }}
         onPointClick={(d) => {
           const p = d as PointDatum;

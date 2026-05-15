@@ -6,7 +6,7 @@ UNHIDE := chflags -R nohidden .venv 2>/dev/null || true
 
 API_PORT ?= 8000
 
-.PHONY: sync api ingest brief seed geonames textures shell schema
+.PHONY: sync api ingest ingest-image brief seed geonames textures shell schema
 
 sync:
 	uv sync
@@ -19,6 +19,10 @@ api:
 ingest:
 	@$(UNHIDE)
 	@uv run python -m risk_observatory.cli ingest $(if $(TEXT),"$(TEXT)",)
+
+ingest-image:
+	@$(UNHIDE)
+	@uv run python -m risk_observatory.cli ingest-image $(if $(SRC),"$(SRC)",)
 
 brief:
 	@$(UNHIDE)

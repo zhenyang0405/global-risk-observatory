@@ -69,6 +69,8 @@ def insert_event(
     ingested: IngestedEvent,
     model: str,
     latency_ms: int,
+    image_url: str | None = None,
+    image_local_path: str | None = None,
 ) -> PersistedEvent:
     event_id = uuid.uuid4().hex
     classified_at = datetime.now(timezone.utc)
@@ -78,8 +80,9 @@ def insert_event(
         INSERT INTO events
           (id, url, title, summary, primary_location, country_iso, lat, lng,
            category, severity, key_entities, sentiment, source, published_at,
-           classified_at, model, latency_ms)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+           classified_at, model, latency_ms,
+           image_url, image_local_path, image_caption)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             event_id,
@@ -99,6 +102,9 @@ def insert_event(
             classified_at.isoformat(),
             model,
             latency_ms,
+            image_url,
+            image_local_path,
+            ingested.image_caption,
         ),
     )
 
@@ -132,6 +138,9 @@ def insert_event(
         classified_at=classified_at,
         model=model,
         latency_ms=latency_ms,
+        image_url=image_url,
+        image_local_path=image_local_path,
+        image_caption=ingested.image_caption,
     )
 
 
@@ -180,8 +189,9 @@ def insert_structured_event(
         INSERT INTO events
           (id, url, title, summary, primary_location, country_iso, lat, lng,
            category, severity, key_entities, sentiment, source, published_at,
-           classified_at, model, latency_ms)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+           classified_at, model, latency_ms,
+           image_url, image_local_path, image_caption)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, NULL, NULL)
         """,
         (
             event_id,
@@ -236,6 +246,18 @@ def insert_structured_event(
     )
 
 
+def _row_get(row: sqlite3.Row, key: str) -> object:
+    """Tolerant column access — returns None if the column is absent.
+
+    Necessary because older DB files predating the image columns will still
+    parse via this function until they're recreated.
+    """
+    try:
+        return row[key]
+    except (KeyError, IndexError):
+        return None
+
+
 def _row_to_event(row: sqlite3.Row) -> PersistedEvent:
     return PersistedEvent(
         id=row["id"],
@@ -255,6 +277,9 @@ def _row_to_event(row: sqlite3.Row) -> PersistedEvent:
         classified_at=_parse_dt(row["classified_at"]),
         model=row["model"],
         latency_ms=row["latency_ms"],
+        image_url=_row_get(row, "image_url"),  # type: ignore[arg-type]
+        image_local_path=_row_get(row, "image_local_path"),  # type: ignore[arg-type]
+        image_caption=_row_get(row, "image_caption"),  # type: ignore[arg-type]
     )
 
 

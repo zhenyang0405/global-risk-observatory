@@ -14,7 +14,9 @@ from datetime import datetime, timezone
 from typing import Iterable
 
 import httpx
+from urllib.parse import urlparse
 
+from ..config import SETTINGS
 from ..schemas import RawArticle
 
 # CAMEO-aligned GDELT themes that map to our risk categories.
@@ -40,6 +42,20 @@ _USER_AGENT = "Global-Risk-Observatory/0.1 (Kaggle Gemma 4 hackathon)"
 
 def _theme_query(themes: Iterable[str]) -> str:
     return "(" + " OR ".join(f"theme:{t}" for t in themes) + ")"
+
+
+def _allowed_image_url(raw: object) -> str | None:
+    """Return the socialimage URL only when its host is on the allowlist.
+
+    Filtering at this layer keeps hot-link-hostile publishers out of the
+    cache before we even attempt a download.
+    """
+    if not isinstance(raw, str) or not raw.startswith(("http://", "https://")):
+        return None
+    host = (urlparse(raw).hostname or "").lower()
+    if not host:
+        return None
+    return raw if any(token in host for token in SETTINGS.image_source_allowlist) else None
 
 
 def _parse_seendate(s: str) -> datetime:
@@ -108,6 +124,7 @@ async def fetch_articles(
                 gdelt_country=a.get("sourcecountry"),
                 gdelt_lat=lat,
                 gdelt_lng=lng,
+                image_url=_allowed_image_url(a.get("socialimage")),
             )
         )
     return out

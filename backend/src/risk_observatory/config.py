@@ -29,6 +29,24 @@ def _bool(env: str, default: bool) -> bool:
     return raw.strip().lower() in {"1", "true", "yes", "on"}
 
 
+_DEFAULT_IMAGE_ALLOWLIST = (
+    "bbc.co.uk",
+    "bbci.co.uk",
+    "reuters.com",
+    "apnews.com",
+    "aljazeera.com",
+    "aljazeera.net",
+)
+
+
+def _csv_tuple(env: str, default: tuple[str, ...]) -> tuple[str, ...]:
+    raw = os.environ.get(env)
+    if not raw:
+        return default
+    parts = tuple(p.strip().lower() for p in raw.split(",") if p.strip())
+    return parts or default
+
+
 @dataclass(frozen=True)
 class Settings:
     ollama_host: str
@@ -43,6 +61,9 @@ class Settings:
     reason_interval_s: int
     ingest_concurrency: int
     use_tool_calling: bool
+    ingest_image_enabled: bool
+    image_cache_path: Path
+    image_source_allowlist: tuple[str, ...]
     api_port: int
     frontend_origin: str
 
@@ -61,6 +82,9 @@ def load_settings() -> Settings:
         reason_interval_s=_int("REASON_INTERVAL", 600),
         ingest_concurrency=_int("INGEST_CONCURRENCY", 4),
         use_tool_calling=_bool("USE_TOOL_CALLING", True),
+        ingest_image_enabled=_bool("INGEST_IMAGE_ENABLED", True),
+        image_cache_path=_path("IMAGE_CACHE_PATH", "../data/images"),
+        image_source_allowlist=_csv_tuple("IMAGE_SOURCE_ALLOWLIST", _DEFAULT_IMAGE_ALLOWLIST),
         api_port=_int("API_PORT", 8000),
         frontend_origin=os.environ.get("FRONTEND_ORIGIN", "http://localhost:3000"),
     )

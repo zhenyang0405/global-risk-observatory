@@ -72,14 +72,22 @@ def chat_structured(
     schema: Type[T],
     options: dict | None = None,
     think: bool = False,
+    images: list[bytes] | None = None,
 ) -> tuple[T, int]:
-    """Single-turn chat with JSON-schema-constrained output. Returns (parsed, latency_ms)."""
+    """Single-turn chat with JSON-schema-constrained output. Returns (parsed, latency_ms).
+
+    Pass `images` (list of raw JPEG/PNG bytes) to invoke the model's vision
+    modality. Ollama attaches them to the user turn.
+    """
     t0 = time.perf_counter()
+    user_msg: dict = {"role": "user", "content": user}
+    if images:
+        user_msg["images"] = images
     response = ollama.chat(
         model=model,
         messages=[
             {"role": "system", "content": system},
-            {"role": "user", "content": user},
+            user_msg,
         ],
         format=schema.model_json_schema(),
         options=options or OPTIONS_INGEST,
@@ -120,6 +128,7 @@ def chat_tools(
     schema: Type[T],
     options: dict | None = None,
     max_tool_rounds: int = 3,
+    images: list[bytes] | None = None,
 ) -> tuple[T, int, list[dict]]:
     """Multi-turn tool-calling loop ending in a schema-locked final answer.
 
@@ -132,11 +141,18 @@ def chat_tools(
 
     Returns (parsed_final, latency_ms, tool_trace). The trace is a list of
     {"round","name","args","result"} dicts useful for debugging / persisting.
+
+    Pass `images` to send raw image bytes alongside the initial user turn
+    (vision modality). Images are attached only to the first user message;
+    subsequent tool-result rounds and the final schema pass are text-only.
     """
     t0 = time.perf_counter()
+    initial_user: dict = {"role": "user", "content": user}
+    if images:
+        initial_user["images"] = images
     messages: list[dict] = [
         {"role": "system", "content": system},
-        {"role": "user", "content": user},
+        initial_user,
     ]
     trace: list[dict] = []
 

@@ -27,6 +27,7 @@ data/cities15000.txt
 data/cities15000.zip
 data/textures/*.jpg
 data/textures/*.png
+data/images/
 frontend/public/textures/*.jpg
 frontend/public/textures/*.png
 

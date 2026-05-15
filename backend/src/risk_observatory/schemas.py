@@ -49,6 +49,10 @@ class RawArticle(BaseModel):
     gdelt_country: Optional[str] = None
     gdelt_lat: Optional[float] = None
     gdelt_lng: Optional[float] = None
+    # Source-attached image (e.g. GDELT socialimage). Only set when the host
+    # passes SETTINGS.image_source_allowlist. When present, the extractor will
+    # try a vision pass instead of text-only.
+    image_url: Optional[str] = None
 
 
 # ---- structured (pre-classified, pre-geocoded) input ----
@@ -94,6 +98,9 @@ class IngestedEvent(BaseModel):
     severity: Severity
     key_entities: list[str] = Field(default_factory=list, max_length=8)
     sentiment: float = Field(ge=-1.0, le=1.0)
+    # Populated only on the image-extraction path. One factual sentence
+    # describing what is visible in the photo (not the article).
+    image_caption: Optional[str] = Field(default=None, max_length=240)
 
 
 class PersistedEvent(BaseModel):
@@ -116,6 +123,9 @@ class PersistedEvent(BaseModel):
     classified_at: datetime
     model: str
     latency_ms: int
+    image_url: Optional[str] = None
+    image_local_path: Optional[str] = None
+    image_caption: Optional[str] = None
 
 
 # ---- 26B outputs ----

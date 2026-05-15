@@ -21,23 +21,26 @@ CREATE INDEX IF NOT EXISTS articles_published_idx
     ON articles(published_at DESC);
 
 CREATE TABLE IF NOT EXISTS events (
-    id              TEXT PRIMARY KEY,
-    url             TEXT NOT NULL REFERENCES articles(url),
-    title           TEXT NOT NULL,
-    summary         TEXT NOT NULL,
+    id               TEXT PRIMARY KEY,
+    url              TEXT NOT NULL REFERENCES articles(url),
+    title            TEXT NOT NULL,
+    summary          TEXT NOT NULL,
     primary_location TEXT NOT NULL,
-    country_iso     TEXT,
-    lat             REAL,
-    lng             REAL,
-    category        TEXT NOT NULL,
-    severity        TEXT NOT NULL,
-    key_entities    TEXT NOT NULL DEFAULT '[]',  -- JSON array
-    sentiment       REAL NOT NULL,
-    source          TEXT NOT NULL,
-    published_at    TEXT NOT NULL,
-    classified_at   TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    model           TEXT NOT NULL,
-    latency_ms      INTEGER NOT NULL
+    country_iso      TEXT,
+    lat              REAL,
+    lng              REAL,
+    category         TEXT NOT NULL,
+    severity         TEXT NOT NULL,
+    key_entities     TEXT NOT NULL DEFAULT '[]',  -- JSON array
+    sentiment        REAL NOT NULL,
+    source           TEXT NOT NULL,
+    published_at     TEXT NOT NULL,
+    classified_at    TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    model            TEXT NOT NULL,
+    latency_ms       INTEGER NOT NULL,
+    image_url        TEXT,
+    image_local_path TEXT,
+    image_caption    TEXT
 );
 
 CREATE INDEX IF NOT EXISTS events_classified_idx
